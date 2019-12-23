@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View,FlatList,StyleSheet,Text,ActivityIndicator,Image, Dimensions, Alert } from 'react-native';
+import { View,FlatList,StyleSheet,Text,ActivityIndicator,Image, Dimensions, Alert, TextInput } from 'react-native';
 import CustomButton from '../components/CustomButton';
 
 
@@ -12,14 +12,18 @@ export default class BooksScreen extends React.Component {
     super(props);
     this.state ={
       isLoading: true,
+      dataSource: [],
+      filterValue: ''
     };
     this.ids = [];
+    this.arrayholder = [];
+    this.showLoader = true;
   }
 
   loadMore(){
     if(!this.state.isLoading){
       this.state.isLoading = true;
-      lastId = this.ids.pop();
+      var lastId = this.ids.pop();
       this.ids = [];
       for(var i=lastId;i<lastId+50;i++){
         this.ids.push(i);
@@ -34,6 +38,8 @@ export default class BooksScreen extends React.Component {
           }, function(){
 
           });
+
+          this.arrayholder  = this.state.dataSource.concat(responseJson);
 
         })
         .catch((error) =>{
@@ -60,24 +66,55 @@ export default class BooksScreen extends React.Component {
         }, function(){
 
         });
+        this.arrayholder  = responseJson;
 
       })
       .catch((error) =>{
         console.error(error);
       });
   }
+  filter(text){
+    this.state.filterValue = text;
+    const newData = this.arrayholder.filter(item => {
+      const itemData = `${item.title.toUpperCase()} ${item.author.toUpperCase()}`;
+      const textData = text.toUpperCase();
+
+      return itemData.indexOf(textData) > -1;
+    });
+    this.setState({
+      dataSource: newData,
+    });
+    //Stop Infinit Loading
+    if(text.length>0){
+      this.state.isLoading = true;
+    }
+    else{
+      this.state.isLoading = false;
+    }
+  }
+  listFooter(){
+    if(this.state.filterValue == '')
+      return <ActivityIndicator size="large" color="#0000ff"/>
+    else {
+      return null;
+    }
+  }
   render() {
     const {navigate} = this.props.navigation;
-    if(this.state.isLoading){
-      return(
-        <View style={{flex: 1, padding: 20}}>
-          <ActivityIndicator size="large" color="#0000ff"/>
-        </View>
-      )
-    }
     return (
-          <FlatList ListFooterComponent={<ActivityIndicator size="large" color="#0000ff"/>} ItemSeparatorComponent={this.FlatListItemSeparator}  onEndReachedThreshold={0.01}   onEndReached={()=>this.loadMore()} data={this.state.dataSource} extraData={this.state.dataSource} renderItem={({item,index})=> <Item date={item.year} navigate={navigate} image={item.coverurl} id={item.md5} title={item.title} author={item.author} />}  keyExtractor={(item,index) => index.toString()}
+          <View style={{flex:1}}>
+          <TextInput
+            lightTheme
+            round
+            onChangeText={text => this.filter(text)}
+            autoCorrect={false}
+            style={styles.filter}
+            onFocus={() => this.showLoader = false}
+            onBlur={() => this.showLoader = true}
+            placeholder="Filter"/>
+          <FlatList style={styles.listStyle} ListFooterComponent={()=>this.listFooter()} ItemSeparatorComponent={this.FlatListItemSeparator}  onEndReachedThreshold={0.01}   onEndReached={()=>this.loadMore()} data={this.state.dataSource} extraData={this.state.dataSource} renderItem={({item,index})=> <Item date={item.year} navigate={navigate} image={item.coverurl} id={item.md5} title={item.title} author={item.author} />}  keyExtractor={(item,index) => index.toString()}
           />
+          </View>
 
     );
   }
@@ -104,6 +141,18 @@ const styles =  StyleSheet.create({
   mainView: {
     padding: 0,
     flex: 1
+  },
+  listStyle:{
+    flex: 1
+  },
+  filter:{
+    padding: 8,
+    borderColor: '#d61bae',
+    borderWidth: 2,
+    borderRadius: 5,
+    margin: 10,
+    fontSize: 18
+
   },
   item: {
     padding: 15,
