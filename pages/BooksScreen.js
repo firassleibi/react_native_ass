@@ -26,7 +26,7 @@ class BooksScreen extends React.Component {
       this.state.isLoading = true;
       var lastId = this.ids.pop();
       this.ids = [];
-      for(var i=lastId;i<lastId+5;i++){
+      for(var i=lastId;i<lastId+50;i++){
         this.ids.push(i);
       }
       return fetch('http://gen.lib.rus.ec/json.php?ids='+this.ids.join(',')+'&fields=Title,Author,MD5,coverurl,year')
@@ -54,7 +54,7 @@ class BooksScreen extends React.Component {
 
   componentDidMount(){
     //Set Ids to fetch
-    for(var i=0;i<5;i++){
+    for(var i=0;i<50;i++){
       this.ids.push(i);
     }
 
