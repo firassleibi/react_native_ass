@@ -18,3 +18,4 @@ Install the React Expo app on your mobile phone scan the QR code and see the App
   - Stack Navigator.
   - Infinite Load
   - Filter
+  - Redux Store to manage books

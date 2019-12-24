@@ -1,7 +1,8 @@
 import React,{Component} from 'react';
 import {Text,StyleSheet,View} from 'react-native';
+import { connect } from 'react-redux';
 
-export default class AboutScreen extends Component{
+class AboutScreen extends Component{
   static navigationOptions = {
     title: 'About Us',
   };
@@ -32,3 +33,5 @@ const styles =  StyleSheet.create({
     flex: 1
   }
 })
+
+export default connect()(AboutScreen);

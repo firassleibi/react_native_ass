@@ -1,6 +1,8 @@
 import React,{Component} from 'react';
 import {Text,StyleSheet, Image,View,ActivityIndicator} from 'react-native';
-export default class DetailsScreen extends Component{
+import { connect } from 'react-redux';
+
+class DetailsScreen extends Component{
   static navigationOptions = {
     title: 'Book Details',
   };
@@ -75,3 +77,4 @@ const styles =  StyleSheet.create({
     margin: 0
   }
 })
+export default connect()(DetailsScreen);

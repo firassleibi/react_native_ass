@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { View,FlatList,StyleSheet,Text,ActivityIndicator,Image, Dimensions, Alert, TextInput } from 'react-native';
 import CustomButton from '../components/CustomButton';
+import { addBooks,clearBooks,setBooks } from '../actions';
+import { connect } from 'react-redux';
 
 
 
-export default class BooksScreen extends React.Component {
+class BooksScreen extends React.Component {
   static navigationOptions = {
     title: 'Books',
   };
@@ -12,12 +14,11 @@ export default class BooksScreen extends React.Component {
     super(props);
     this.state ={
       isLoading: true,
-      dataSource: [],
       filterValue: ''
     };
     this.ids = [];
-    this.arrayholder = [];
     this.showLoader = true;
+    this.props.clearBooks();
   }
 
   loadMore(){
@@ -25,7 +26,7 @@ export default class BooksScreen extends React.Component {
       this.state.isLoading = true;
       var lastId = this.ids.pop();
       this.ids = [];
-      for(var i=lastId;i<lastId+50;i++){
+      for(var i=lastId;i<lastId+5;i++){
         this.ids.push(i);
       }
       return fetch('http://gen.lib.rus.ec/json.php?ids='+this.ids.join(',')+'&fields=Title,Author,MD5,coverurl,year')
@@ -34,12 +35,12 @@ export default class BooksScreen extends React.Component {
 
           this.setState({
             isLoading: false,
-            dataSource: this.state.dataSource.concat(responseJson),
           }, function(){
 
           });
+          this.props.addBooks(responseJson);
 
-          this.arrayholder  = this.state.dataSource.concat(responseJson);
+
 
         })
         .catch((error) =>{
@@ -53,20 +54,20 @@ export default class BooksScreen extends React.Component {
 
   componentDidMount(){
     //Set Ids to fetch
-    for(var i=0;i<50;i++){
+    for(var i=0;i<5;i++){
       this.ids.push(i);
     }
+
     return fetch('http://gen.lib.rus.ec/json.php?ids='+this.ids.join(',')+'&fields=Title,Author,MD5,coverurl,year')
       .then((response) => response.json())
       .then((responseJson) => {
 
         this.setState({
           isLoading: false,
-          dataSource: responseJson,
         }, function(){
 
         });
-        this.arrayholder  = responseJson;
+        this.props.addBooks(responseJson);
 
       })
       .catch((error) =>{
@@ -74,23 +75,30 @@ export default class BooksScreen extends React.Component {
       });
   }
   filter(text){
-    this.state.filterValue = text;
-    const newData = this.arrayholder.filter(item => {
-      const itemData = `${item.title.toUpperCase()} ${item.author.toUpperCase()}`;
-      const textData = text.toUpperCase();
 
-      return itemData.indexOf(textData) > -1;
-    });
-    this.setState({
-      dataSource: newData,
-    });
-    //Stop Infinit Loading
     if(text.length>0){
+      if(this.state.saved_data == null){
+        this.state.saved_data = this.props.books;
+      }
       this.state.isLoading = true;
+      this.state.filterValue = text;
+      const newData = this.state.saved_data.filter(item => {
+        const itemData = `${item.title.toUpperCase()} ${item.author.toUpperCase()}`;
+        const textData = text.toUpperCase();
+
+        return itemData.indexOf(textData) > -1;
+      });
+      this.props.setBooks(newData);
     }
     else{
       this.state.isLoading = false;
+      this.props.setBooks(this.state.saved_data );
+      this.state.saved_data = null;
     }
+
+
+
+
   }
   listFooter(){
     if(this.state.filterValue == '')
@@ -112,7 +120,7 @@ export default class BooksScreen extends React.Component {
             onFocus={() => this.showLoader = false}
             onBlur={() => this.showLoader = true}
             placeholder="Filter"/>
-          <FlatList style={styles.listStyle} ListFooterComponent={()=>this.listFooter()} ItemSeparatorComponent={this.FlatListItemSeparator}  onEndReachedThreshold={0.01}   onEndReached={()=>this.loadMore()} data={this.state.dataSource} extraData={this.state.dataSource} renderItem={({item,index})=> <Item date={item.year} navigate={navigate} image={item.coverurl} id={item.md5} title={item.title} author={item.author} />}  keyExtractor={(item,index) => index.toString()}
+          <FlatList style={styles.listStyle} ListFooterComponent={()=>this.listFooter()} ItemSeparatorComponent={this.FlatListItemSeparator}  onEndReachedThreshold={0.01}   onEndReached={()=>this.loadMore()} data={this.props.books} extraData={this.props.books} renderItem={({item,index})=> <Item date={item.year} navigate={navigate} image={item.coverurl} id={item.md5} title={item.title} author={item.author} />}  keyExtractor={(item,index) => index.toString()}
           />
           </View>
 
@@ -184,3 +192,16 @@ const styles =  StyleSheet.create({
     margin: 0
   }
 })
+
+
+const mapStateToProps = state => {
+  return {
+    books: state.app.books
+  };
+};
+
+const mapDispatchToProps = {
+  addBooks,clearBooks,setBooks
+};
+
+export default connect(mapStateToProps,mapDispatchToProps)(BooksScreen);

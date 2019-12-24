@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import CustomButton from '../components/CustomButton'
+import { connect } from 'react-redux';
 
 class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -32,7 +33,7 @@ class HomeScreen extends React.Component {
         />
         <CustomButton
           style={{backgroundColor:'#202646'}}
-          text="Settings"
+          text={'Settings'}
           onPress={() => navigate('Settings')}
         />
       </View>
@@ -49,4 +50,4 @@ const styles =  StyleSheet.create({
 
 
 
-export default HomeScreen;
+export default connect()(HomeScreen);

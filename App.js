@@ -8,6 +8,8 @@ import BooksScreen from './pages/BooksScreen';
 import DetailsScreen from './pages/DetailsScreen';
 import AboutScreen from './pages/AboutScreen';
 import SettingsScreen from './pages/SettingsScreen';
+import { Provider } from 'react-redux';
+import Store from './store'
 
 
 
@@ -35,8 +37,23 @@ const MainNavigator = createStackNavigator({
 
 
 
-const App = createAppContainer(MainNavigator);
+const AppContainer = createAppContainer(MainNavigator);
 
 
 
-export default App;
+export default (props) => {
+  return (
+    <View style={styles.flex}>
+      <Provider store={Store}>
+        <AppContainer screenProps={props} />
+      </Provider>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor:'red'
+  }
+})
